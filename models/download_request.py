@@ -27,7 +27,7 @@ class DownloadRequest(Model):
         :type compressed_file_type: str
         """
         self.swagger_types = {
-            'id': int,
+            'id': str,
             'spec': DownloadSpec,
             'status': str,
             'is_consumable': bool,
