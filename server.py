@@ -1,12 +1,20 @@
+import sched
+import threading
+import time
+
 import requests
 from requests.compat import urljoin
 from flask import Flask, request, abort, Response
 from models import DownloadSpec, DownloadRequest
 
 
+REQUEST_KEEPING_TIMEOUT_SEC = 30  # 60 * 60 * 12  # 12 hours
+
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 request_id_to_agent = {}
+scheduler = sched.scheduler(time.time, time.sleep)
 
 
 def _get_agent_by_spec(spec):
@@ -35,6 +43,15 @@ def _forward_request_by_id(request_id):
     return _build_new_response_from_agent_response(agent_response)
 
 
+def _delete_request(request_id):
+    del request_id_to_agent[request_id]
+
+
+def _schedule_request_deletion(request_id):
+    scheduler.enter(REQUEST_KEEPING_TIMEOUT_SEC, 1, _delete_request, (request_id,))
+    scheduler.run()
+
+
 @app.route('/search', methods=['POST'])
 def search():
     spec = DownloadSpec.from_dict(request.json)
@@ -55,7 +72,9 @@ def submit_download_request():
     resp_json = agent_response.json()
     returned_dl_req = DownloadRequest.from_dict(resp_json)
     request_id_to_agent[returned_dl_req.id] = (agent_host, agent_port)
-    # TODO Remove ID from request_id_to_agent after a timeout
+
+    job_thread = threading.Thread(target=_schedule_request_deletion, args=(returned_dl_req.id,))
+    job_thread.start()
 
     return _build_new_response_from_agent_response(agent_response)
 
