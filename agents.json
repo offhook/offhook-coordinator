@@ -1,0 +1,28 @@
+{
+  "sources": {
+    "yum": {
+      "name": "YUM",
+      "operatingSystems": {
+        "el7": {
+          "name": "RHEL/CentOS 7",
+          "architectures": {
+            "x86_64": {
+              "name": "x86_64",
+              "agent": "yum-centos7"
+            },
+            "i686": {
+              "name": "i686",
+              "agent": "yum-centos7"
+            }
+          }
+        }
+      }
+    }
+  },
+  "agents": {
+    "yum-centos7": {
+      "host": "localhost",
+      "port": 8081
+    }
+  }
+}

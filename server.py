@@ -6,7 +6,7 @@ import requests
 from requests.compat import urljoin
 from flask import Flask, request, abort, Response
 from models import DownloadSpec, DownloadRequest
-
+from agents import agents, supported
 
 REQUEST_KEEPING_TIMEOUT_SEC = 30  # 60 * 60 * 12  # 12 hours
 
@@ -17,9 +17,26 @@ request_id_to_agent = {}
 scheduler = sched.scheduler(time.time, time.sleep)
 
 
-def _get_agent_by_spec(spec):
+def _get_agent_by_spec(spec: DownloadSpec):
     """ Returns the hostname and port for the agent which is able to serve the given spec """
-    return 'localhost', 8081
+
+    sources = agents['sources']
+    if spec.source not in sources:
+        raise ValueError(f'Source "{spec.source}" is not supported')
+
+    operating_systems = sources[spec.source]['operatingSystems']
+    if spec.os not in operating_systems:
+        raise ValueError(f'Operating system "{spec.os}" is not supported')
+
+    architectures = operating_systems[spec.os]['architectures']
+    if spec.architecture not in architectures:
+        raise ValueError(f'Architecture "{spec.architecture}" is not supported')
+
+    agent_key = architectures[spec.architecture]['agent']
+
+    agent_properties = agents['agents'][agent_key]
+
+    return agent_properties['host'], agent_properties['port']
 
 
 def _build_url(host, port, path, protocol='http'):
@@ -87,6 +104,12 @@ def get_download_request(request_id):
 @app.route('/download/<string:request_id>/files', methods=['GET'])
 def get_download_files(request_id):
     return _forward_request_by_id(request_id)
+
+
+@app.route('/sources', methods=['GET'])
+def get_supported_sources():
+    pass
+    # TODO
 
 
 if __name__ == '__main__':
