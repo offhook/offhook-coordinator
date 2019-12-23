@@ -31,7 +31,6 @@ class SourcesManager:
         return copy.deepcopy(self.__supported_sources)
 
     def get_agent_key_for_spec(self, spec: DownloadSpec):
-
         if spec.source not in self.__sources:
             raise ValueError(f'Source "{spec.source}" is not supported')
 

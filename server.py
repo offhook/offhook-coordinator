@@ -51,6 +51,8 @@ def _schedule_request_deletion(request_id):
 
 def _get_agent_host_port_by_spec(spec: DownloadSpec):
     try:
+        if not spec:
+            abort(400, 'Download spec must be specified.')
         agent_key = sources_manager.get_agent_key_for_spec(spec)
     except ValueError:
         abort(400, 'No agent can satisfy the given spec. Head over to /sources to list supported sources.')
