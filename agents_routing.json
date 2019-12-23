@@ -1,0 +1,6 @@
+{
+  "yum-centos7": {
+    "host": "localhost",
+    "port": 8081
+  }
+}

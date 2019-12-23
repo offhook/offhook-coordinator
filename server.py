@@ -4,9 +4,10 @@ import time
 
 import requests
 from requests.compat import urljoin
-from flask import Flask, request, abort, Response
+from flask import Flask, request, abort, Response, jsonify
 from models import DownloadSpec, DownloadRequest
-from agents import agents, supported
+from sources_manager import SourcesManager
+
 
 REQUEST_KEEPING_TIMEOUT_SEC = 30  # 60 * 60 * 12  # 12 hours
 
@@ -15,28 +16,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 request_id_to_agent = {}
 scheduler = sched.scheduler(time.time, time.sleep)
-
-
-def _get_agent_by_spec(spec: DownloadSpec):
-    """ Returns the hostname and port for the agent which is able to serve the given spec """
-
-    sources = agents['sources']
-    if spec.source not in sources:
-        raise ValueError(f'Source "{spec.source}" is not supported')
-
-    operating_systems = sources[spec.source]['operatingSystems']
-    if spec.os not in operating_systems:
-        raise ValueError(f'Operating system "{spec.os}" is not supported')
-
-    architectures = operating_systems[spec.os]['architectures']
-    if spec.architecture not in architectures:
-        raise ValueError(f'Architecture "{spec.architecture}" is not supported')
-
-    agent_key = architectures[spec.architecture]['agent']
-
-    agent_properties = agents['agents'][agent_key]
-
-    return agent_properties['host'], agent_properties['port']
+sources_manager = SourcesManager()
 
 
 def _build_url(host, port, path, protocol='http'):
@@ -69,10 +49,19 @@ def _schedule_request_deletion(request_id):
     scheduler.run()
 
 
+def _get_agent_host_port_by_spec(spec: DownloadSpec):
+    try:
+        agent_key = sources_manager.get_agent_key_for_spec(spec)
+    except ValueError:
+        abort(400, 'No agent can satisfy the given spec. Head over to /sources to list supported sources.')
+
+    return sources_manager.get_host_port_for_agent(agent_key)
+
+
 @app.route('/search', methods=['POST'])
 def search():
     spec = DownloadSpec.from_dict(request.json)
-    agent_host, agent_port = _get_agent_by_spec(spec)
+    agent_host, agent_port = _get_agent_host_port_by_spec(spec)
     agent_url = _build_url(agent_host, agent_port, request.path)
     agent_response = requests.request(request.method, agent_url, headers=request.headers, data=request.data)
 
@@ -82,7 +71,7 @@ def search():
 @app.route('/download', methods=['POST'])
 def submit_download_request():
     dl_req = DownloadRequest.from_dict(request.json)
-    agent_host, agent_port = _get_agent_by_spec(dl_req.spec)
+    agent_host, agent_port = _get_agent_host_port_by_spec(dl_req.spec)
     agent_url = _build_url(agent_host, agent_port, request.path)
     agent_response = requests.request(request.method, agent_url, headers=request.headers, data=request.data)
 
@@ -108,8 +97,7 @@ def get_download_files(request_id):
 
 @app.route('/sources', methods=['GET'])
 def get_supported_sources():
-    pass
-    # TODO
+    return jsonify(sources_manager.get_supported_sources())
 
 
 if __name__ == '__main__':
