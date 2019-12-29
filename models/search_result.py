@@ -11,26 +11,26 @@ class SearchResult(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, nevra_string=None):  # noqa: E501
+    def __init__(self, name=None, full_name=None):  # noqa: E501
         """SearchResult - a model defined in Swagger
 
         :param name: The name of this SearchResult.  # noqa: E501
         :type name: str
-        :param nevra_string: The nevra_string of this SearchResult.  # noqa: E501
-        :type nevra_string: str
+        :param full_name: The full_name of this SearchResult.  # noqa: E501
+        :type full_name: str
         """
         self.swagger_types = {
             'name': str,
-            'nevra_string': str
+            'full_name': str
         }
 
         self.attribute_map = {
             'name': 'name',
-            'nevra_string': 'nevraString'
+            'full_name': 'fullName'
         }
 
         self._name = name
-        self._nevra_string = nevra_string
+        self._full_name = full_name
 
     @classmethod
     def from_dict(cls, dikt):
@@ -67,26 +67,26 @@ class SearchResult(Model):
         self._name = name
 
     @property
-    def nevra_string(self):
-        """Gets the nevra_string of this SearchResult.
+    def full_name(self):
+        """Gets the full_name of this SearchResult.
 
-        NEVRA (Name, Epoch, Version, Revision, Architecture) of the package  # noqa: E501
+        A fully-describing name of the package  # noqa: E501
 
-        :return: The nevra_string of this SearchResult.
+        :return: The full_name of this SearchResult.
         :rtype: str
         """
-        return self._nevra_string
+        return self._full_name
 
-    @nevra_string.setter
-    def nevra_string(self, nevra_string):
-        """Sets the nevra_string of this SearchResult.
+    @full_name.setter
+    def full_name(self, full_name):
+        """Sets the full_name of this SearchResult.
 
-        NEVRA (Name, Epoch, Version, Revision, Architecture) of the package  # noqa: E501
+        A fully-describing name of the package  # noqa: E501
 
-        :param nevra_string: The nevra_string of this SearchResult.
-        :type nevra_string: str
+        :param full_name: The full_name of this SearchResult.
+        :type full_name: str
         """
-        if nevra_string is None:
-            raise ValueError("Invalid value for `nevra_string`, must not be `None`")  # noqa: E501
+        if full_name is None:
+            raise ValueError("Invalid value for `full_name`, must not be `None`")  # noqa: E501
 
-        self._nevra_string = nevra_string
+        self._full_name = full_name
