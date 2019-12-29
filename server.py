@@ -1,10 +1,10 @@
 import sched
 import threading
 import time
-
 import requests
 from requests.compat import urljoin
 from flask import Flask, request, abort, Response, jsonify
+from flask_cors import CORS
 from models import DownloadSpec, DownloadRequest
 from sources_manager import SourcesManager
 
@@ -14,6 +14,7 @@ REQUEST_KEEPING_TIMEOUT_SEC = 30  # 60 * 60 * 12  # 12 hours
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+CORS(app)
 request_id_to_agent = {}
 scheduler = sched.scheduler(time.time, time.sleep)
 sources_manager = SourcesManager()
