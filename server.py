@@ -9,7 +9,7 @@ from models import DownloadSpec, DownloadRequest
 from sources_manager import SourcesManager
 
 
-REQUEST_KEEPING_TIMEOUT_SEC = 30  # 60 * 60 * 12  # 12 hours
+REQUEST_KEEPING_TIMEOUT_SEC = 60 * 60 * 12  # 12 hours
 
 
 app = Flask(__name__)
@@ -95,7 +95,9 @@ def get_download_request(request_id):
 
 @app.route('/download/<string:request_id>/files', methods=['GET'])
 def get_download_files(request_id):
-    return _forward_request_by_id(request_id)
+    response = _forward_request_by_id(request_id)
+    response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+    return response
 
 
 @app.route('/sources', methods=['GET'])
