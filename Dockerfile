@@ -1,4 +1,4 @@
-FROM python:3.8-alpine
+FROM python:3.7.1-alpine
 
 WORKDIR /usr/src/app
 
@@ -7,7 +7,7 @@ COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install gunicorn==19.10.0
 
-COPY . /usr/src/app
+COPY . .
 
 EXPOSE 8080
 

@@ -35,6 +35,12 @@ def _deserialize(data, klass):
             return _deserialize_list(data, klass.__args__[0])
         if klass.__extra__ == dict:
             return _deserialize_dict(data, klass.__args__[1])
+    elif type(klass) == typing._GenericAlias:
+        if klass.__origin__ == list:
+            return _deserialize_list(data, klass.__args__[0])
+        if klass.__origin__ == dict:
+            return _deserialize_dict(data, klass.__args__[1])
+
     else:
         return deserialize_model(data, klass)
 
